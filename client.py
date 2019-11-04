@@ -1,6 +1,8 @@
 import pygame
 from network import Network
+from tkinter import *
 import pickle
+
 pygame.font.init()
 
 width = 700
@@ -9,7 +11,7 @@ win = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Client")
 
 
-class Button:
+class Button1:
     def __init__(self, text, x, y, color):
         self.text = text
         self.x = x
@@ -22,8 +24,8 @@ class Button:
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
         font = pygame.font.SysFont("console", 18)
         text = font.render(self.text, 1, (255, 255, 255))
-        win.blit(text, (self.x + round(self.width/2) - round(text.get_width()/2),
-                        self.y + round(self.height/2) - round(text.get_height()/2)))
+        win.blit(text, (self.x + round(self.width / 2) - round(text.get_width() / 2),
+                        self.y + round(self.height / 2) - round(text.get_height() / 2)))
 
     def click(self, pos):
         x1 = pos[0]
@@ -33,40 +35,41 @@ class Button:
         else:
             return False
 
+
 def redrawWindow(win, game, p):
     win.fill((128, 128, 128))
 
-    if not(game.connected()):
+    if not (game.connected()):
         font = pygame.font.SysFont("console", 48)
-        text = font.render("Waiting for Player...", 1, (255,0,0))
-        win.blit(text, (width/2 - text.get_width()/2, height/2 - text.get_height()/2))
+        text = font.render("Waiting for Player...", 1, (255, 0, 0))
+        win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2))
     else:
         font = pygame.font.SysFont("console", 36)
-        text = font.render("Your move", 1, (0,255,255))
-        win.blit(text, (80,200))
+        text = font.render("Your move", 1, (0, 255, 255))
+        win.blit(text, (80, 200))
 
-        text = font.render("Opponents", 1, (0,255,255))
-        win.blit(text, (380,200))
+        text = font.render("Opponents", 1, (0, 255, 255))
+        win.blit(text, (380, 200))
 
         move1 = game.get_player_move(0)
         move2 = game.get_player_move(1)
         if game.bothWent():
-            text1 = font.render(move1, 1, (0,0,0))
-            text2 = font.render(move2, 1, (0,0,0))
+            text1 = font.render(move1, 1, (0, 0, 0))
+            text2 = font.render(move2, 1, (0, 0, 0))
         else:
             if game.p1Went and p == 0:
-                text1 = font.render(move1, 1, (0,0,0))
+                text1 = font.render(move1, 1, (0, 0, 0))
             elif game.p1Went:
-                text1 = font.render("Locked In", 1, (0,0,0))
+                text1 = font.render("Locked In", 1, (0, 0, 0))
             else:
-                text1 = font.render("Waiting...", 1, (0,0,0))
+                text1 = font.render("Waiting...", 1, (0, 0, 0))
 
             if game.p2Went and p == 1:
-                text2 = font.render(move2, 1, (0,0,0))
+                text2 = font.render(move2, 1, (0, 0, 0))
             elif game.p2Went:
-                text2 = font.render("Locked In", 1, (0,0,0))
+                text2 = font.render("Locked In", 1, (0, 0, 0))
             else:
-                text2 = font.render("Waiting...", 1, (0,0,0))
+                text2 = font.render("Waiting...", 1, (0, 0, 0))
 
         if p == 1:
             win.blit(text2, (100, 350))
@@ -80,7 +83,10 @@ def redrawWindow(win, game, p):
     pygame.display.update()
 
 
-btns = [Button("Rock", 50, 500, (0,0,0)), Button("Scissors", 250, 500, (255,0,0)), Button("Paper", 450, 500, (0, 255, 0))]
+btns = [Button1("Rock", 50, 500, (0, 0, 0)), Button1("Scissors", 250, 500, (255, 0, 0)),
+        Button1("Paper", 450, 500, (0, 255, 0))]
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -109,13 +115,13 @@ def main():
 
             font = pygame.font.SysFont("console", 48)
             if (game.winner() == 1 and player == 1) or (game.winner() == 0 and player == 0):
-                text = font.render("You Won!", 1, (255,0,0))
+                text = font.render("You Won!", 1, (255, 0, 0))
             elif game.winner() == -1:
-                text = font.render("Tie Game!", 1, (255,0,0))
+                text = font.render("Tie Game!", 1, (255, 0, 0))
             else:
-                text = font.render("You Lost!", 1, (255,0,0))
+                text = font.render("You Lost!", 1, (255, 0, 0))
 
-            win.blit(text, ((width/2 - text.get_width()/2), (height/2 - text.get_height()/2)))
+            win.blit(text, ((width / 2 - text.get_width() / 2), (height / 2 - text.get_height() / 2)))
             pygame.display.update()
             pygame.time.delay(2000)
 
@@ -130,12 +136,17 @@ def main():
                     if btn.click(pos) and game.connected():
                         if player == 0:
                             if not game.p1Went:
+                                '''
+                                roll here
+                                prob send each roll to the server
+                                '''
                                 n.send(btn.text)
                         else:
                             if not game.p2Went:
                                 n.send(btn.text)
 
             redrawWindow(win, game, player)
+
 
 def menu_screen():
     run = True
@@ -145,8 +156,8 @@ def menu_screen():
         clock.tick(60)
         win.fill((128, 128, 128))
         font = pygame.font.SysFont("console", 24)
-        text = font.render("Click to Play!", 1, (255,0,0))
-        win.blit(text, (100,200))
+        text = font.render("Click to Play!", 1, (255, 0, 0))
+        win.blit(text, (100, 200))
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -157,6 +168,28 @@ def menu_screen():
                 run = False
     main()
 
-while True:
-    menu_screen()
 
+def main_menu():
+    root = Tk()
+    b = Menu(root)
+    root.mainloop()
+    return 1
+
+
+class Menu:
+
+    def __init__(self, root):
+        frame = Frame(root)
+        frame.pack()
+
+        self.printButton = Button(frame, text="Start Game", command=main)
+        self.printButton.pack(side=LEFT)
+
+        self.quitButton = Button(frame, text="Quit", command=frame.quit())
+        self.quitButton.pack(side=LEFT)
+
+
+while True:
+    # if main_menu() == 1:
+    # break
+    menu_screen()

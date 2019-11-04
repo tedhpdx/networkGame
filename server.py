@@ -72,7 +72,4 @@ while True:
     else:
         games[gameId].ready = True
         p = 1
-
-
-
     start_new_thread(threaded_client, (conn, p, gameId))
