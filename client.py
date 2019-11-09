@@ -1,3 +1,5 @@
+from random import randint
+
 import pygame
 from network import Network
 from tkinter import *
@@ -19,6 +21,7 @@ class Button1:
         self.color = color
         self.width = 150
         self.height = 100
+        self.roll = []
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
@@ -51,21 +54,21 @@ def redrawWindow(win, game, p):
         text = font.render("Opponents", 1, (0, 255, 255))
         win.blit(text, (380, 200))
 
-        move1 = game.get_player_move(0)
-        move2 = game.get_player_move(1)
+        roll1 = game.get_player_move(0)
+        roll2 = game.get_player_move(1)
         if game.bothWent():
-            text1 = font.render(move1, 1, (0, 0, 0))
-            text2 = font.render(move2, 1, (0, 0, 0))
+            text1 = font.render(roll1[0], 1, (0, 0, 0))
+            text2 = font.render(roll2[0], 1, (0, 0, 0))
         else:
             if game.p1Went and p == 0:
-                text1 = font.render(move1, 1, (0, 0, 0))
+                text1 = font.render(roll1[0], 1, (0,0,0))
             elif game.p1Went:
                 text1 = font.render("Locked In", 1, (0, 0, 0))
             else:
                 text1 = font.render("Waiting...", 1, (0, 0, 0))
 
             if game.p2Went and p == 1:
-                text2 = font.render(move2, 1, (0, 0, 0))
+                text2 = font.render(roll2[0], 1, (0, 0, 0))
             elif game.p2Went:
                 text2 = font.render("Locked In", 1, (0, 0, 0))
             else:
@@ -83,8 +86,9 @@ def redrawWindow(win, game, p):
     pygame.display.update()
 
 
-btns = [Button1("Rock", 50, 500, (0, 0, 0)), Button1("Scissors", 250, 500, (255, 0, 0)),
-        Button1("Paper", 450, 500, (0, 255, 0))]
+btns = [Button1("Roll", 50, 500, (0, 0, 0))]
+
+    #Button1("Scissors", 250, 500, (255, 0, 0)), Button2("Paper", 450, 500, (0, 255, 0))
 
 
 def main():
@@ -138,9 +142,14 @@ def main():
                             if not game.p1Went:
                                 '''
                                 roll here
-                                prob send each roll to the server
-                                '''
                                 n.send(btn.text)
+                                '''
+                                print ("First Roll")
+
+                                values = []
+                                for i in range(5):
+                                    btn.roll.append(randint(1,6))
+                                n.send(btn.roll)
                         else:
                             if not game.p2Went:
                                 n.send(btn.text)

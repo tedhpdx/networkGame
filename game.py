@@ -23,6 +23,7 @@ class Game:
         else:
             self.p2Went = True
 
+
     def connected(self):
         return self.ready
 
@@ -31,9 +32,9 @@ class Game:
 
     def winner(self):
 
-        p1 = self.moves[0].upper()[0] #gets first letter of move (Rock, Paper, or Scissor)
-        p2 = self.moves[1].upper()[0] #gets first letter of move (Rock, Paper, or Scissor)
-
+        p1 = self.moves[0] #gets roll value for player 1
+        p2 = self.moves[1] #gets roll value for player 2
+        '''
         winner = -1
         if p1 == "R" and p2 == "S":
             winner = 0
@@ -47,8 +48,10 @@ class Game:
             winner = 0
         elif p1 == "P" and p2 == "S":
             winner = 1
-
         return winner
+        '''
+        return 0
+        
 
     def resetWent(self):
         self.p1Went = False
