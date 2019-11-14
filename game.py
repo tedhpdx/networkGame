@@ -34,24 +34,18 @@ class Game:
 
         p1 = self.moves[0] #gets roll value for player 1
         p2 = self.moves[1] #gets roll value for player 2
-        '''
+        p1 = p1[1]
+        p2 = p2[1]
+
         winner = -1
-        if p1 == "R" and p2 == "S":
+        if p1 > p2:
             winner = 0
-        elif p1 == "S" and p2 == "R":
-            winner = 1
-        elif p1 == "P" and p2 == "R":
-            winner = 0
-        elif p1 == "R" and p2 == "P":
-            winner = 1
-        elif p1 == "S" and p2 == "P":
-            winner = 0
-        elif p1 == "P" and p2 == "S":
+        elif p1 == p2:
+            winner = -1
+        else:
             winner = 1
         return winner
-        '''
-        return 0
-        
+
 
     def resetWent(self):
         self.p1Went = False
