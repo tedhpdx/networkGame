@@ -1,3 +1,5 @@
+from player import Player
+
 class Game:
     def __init__(self,id):
         self.p1Went = False
@@ -7,6 +9,8 @@ class Game:
         self.moves = [None, None]
         self.wins = [0,0]
         self.ties = 0
+        self.p0Name = ""
+        self.p1Name = ""
 
     def get_player_move(self, p):
         """
@@ -14,6 +18,12 @@ class Game:
         :return: Move
         """
         return self.moves[p]
+
+    def get_opponent_name(self, p):
+        if p == 0:
+            return self.p1Name
+        elif p == 1:
+            return self.p0Name
 
     def play(self, player, move):
 

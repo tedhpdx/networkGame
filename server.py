@@ -1,5 +1,6 @@
 import socket
 from _thread import *
+from player import Player
 from game import Game
 import pickle
 
@@ -25,25 +26,37 @@ def threaded_client(conn, p, gameId):
     global idCount
     conn.send(str.encode(str(p)))
 
-    reply = ""
     while True:
         try:
-            data = conn.recv(4096).decode()
+            dice_roller = Player("", 0)
+            data = conn.recv(4096)
+            dice_roller = pickle.loads(data)
             if gameId in games:
                 game = games[gameId]
                 if not data:
                     break
                 else:
-                    if data == "reset":
+                    if dice_roller.pickle_string == "reset":
                         game.resetWent()
-                    elif data != "get":
-                        game.play(p, data)
-                reply = game
-                conn.sendall(pickle.dumps(reply))
+                    elif dice_roller.pickle_string != "get":
+                        if p == 0:
+                            game.p1Name = dice_roller.name
+                        elif p == 1:
+                            game.p0Name = dice_roller.name
+                        game.play(p, dice_roller)
+                #this is where we can store data in the game class for each of our players
+                #probs want to use a dictionary for each player with all their data inside
+                if p == 0:
+                    game.p0Name = dice_roller.name
+                elif p == 1:
+                    game.p1Name = dice_roller.name
+                conn.sendall(pickle.dumps(game))
             else:
                 break
         except:
+            print("error")
             break
+
     print("Lost Connection")
     try:
         del games[gameId]
@@ -54,8 +67,6 @@ def threaded_client(conn, p, gameId):
     conn.close()
 
 
-
-
 currentPlayer = 0
 while True:
     conn, addr = s.accept()
@@ -63,7 +74,7 @@ while True:
 
     idCount += 1
     p = 0
-    gameId = (idCount - 1)//2
+    gameId = (idCount - 1) // 2
     if idCount % 2 == 1:
         games[gameId] = Game(gameId)
         print("Creating a new game...")

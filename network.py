@@ -22,8 +22,10 @@ class Network:
 
     def send(self, data):
         try:
-            self.client.send(str.encode(str(data)))
-            return pickle.loads(self.client.recv(2048))
+            dice_player = pickle.dumps(data)
+            self.client.send(dice_player)
+            something = pickle.loads(self.client.recv(2048))
+            return something
         except socket.error as e:
             print(e)
 
