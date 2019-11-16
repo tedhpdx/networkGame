@@ -2,6 +2,7 @@ from random import randint
 import pygame
 from network import Network
 from player import Player
+from button import Button
 
 pygame.font.init()
 
@@ -11,38 +12,12 @@ win = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Client")
 
 
-class Button1:
-    def __init__(self, text, x, y, color, value=0):
-        self.text = text
-        self.x = x
-        self.y = y
-        self.color = color
-        self.value = value
-        self.width = 150
-        self.height = 100
-
-    def draw(self, win):
-        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
-        font = pygame.font.SysFont("console", 18)
-        text = font.render(self.text, 1, (255, 255, 255))
-        win.blit(text, (self.x + round(self.width / 2) - round(text.get_width() / 2),
-                        self.y + round(self.height / 2) - round(text.get_height() / 2)))
-
-    def click(self, pos):
-        x1 = pos[0]
-        y1 = pos[1]
-        if self.x <= x1 <= self.x + self.width and self.y <= y1 <= self.y + self.height:
-            return True
-        else:
-            return False
-
-
-roll_btn = Button1("Roll", 50, 500, (0, 0, 0), 0)
-choice_buttons = [Button1("Die #1", 0, 500, (0, 0, 0), 1),
-                  Button1("Die #2", 200, 500, (0, 0, 0), 2),
-                  Button1("Die #3", 400, 500, (0, 0, 0), 3),
-                  Button1("Die #4", 600, 500, (0, 0, 0), 4),
-                  Button1("Die #5", 800, 500, (0, 0, 0), 5)]
+roll_btn = Button("Roll", 50, 500, (0, 0, 0), 0)
+choice_buttons = [Button("Die #1", 0, 500, (0, 0, 0), 0),
+                  Button("Die #2", 200, 500, (0, 0, 0), 1),
+                  Button("Die #3", 400, 500, (0, 0, 0), 2),
+                  Button("Die #4", 600, 500, (0, 0, 0), 3),
+                  Button("Die #5", 800, 500, (0, 0, 0), 4)]
 
 
 def redrawWindow(win, game, dice_player):
@@ -95,8 +70,6 @@ def create_a_game(dice_player):
     p = int(n.getP())
     dice_player.p = p
     print("You are player ", p)
-    player_total = 0
-    remaining_rolls = 5
     away_choice = '2'
 
     while run:
@@ -129,8 +102,7 @@ def create_a_game(dice_player):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
                     if roll_btn.click(pos) and game.connected():
-                        roll_dice(dice_player)
-                        dice_player.roll_total = player_total
+                        dice_player.roll_dice()
                         n.send(dice_player)
                         dice_player.rolled = True
                         dice_player.remaining_rolls -= 1
@@ -147,18 +119,10 @@ def create_a_game(dice_player):
                     pos = pygame.mouse.get_pos()
                     for choice in choice_buttons:
                         if choice.click(pos) and game.connected():
-                            if int(away_choice) != dice_player.roll[choice.value - 1]:
-                                dice_player.roll_total += dice_player.roll[choice.value - 1]
-                            #player_total = dice_player.roll_total
+                            dice_player.get_points(away_choice, choice.value)
                             n.send(dice_player)
                             dice_player.rolled = False
                 redrawWindow(win, game, dice_player)
-
-
-def roll_dice(dice_player):
-    dice_player.roll.clear()
-    for i in range(5):
-        dice_player.roll.append(randint(1, 6))
 
 
 def render_rolls(roll, remaining_rolls, roll_total):
@@ -185,7 +149,6 @@ def render_rolls(roll, remaining_rolls, roll_total):
 def welcome_screen():
     run = True
     clock = pygame.time.Clock()
-    away_choice = -1
 
     while run:
         clock.tick(60)
@@ -221,12 +184,12 @@ def player_setup():
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
         text1 = font.render("Please choose your character", 1, (255, 0, 0))
         win.blit(text1, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 100))
-        btns1 = [Button1("Tex", 100, 600, (0, 0, 0)),
-                 Button1("Sally", 300, 600, (0, 0, 0)),
-                 Button1("Floyd", 500, 600, (0, 0, 0)),
-                 Button1("Amber", 100, 750, (0, 0, 0)),
-                 Button1("Arnold", 300, 750, (0, 0, 0)),
-                 Button1("Generate $$$", 500, 750, (0, 0, 0))]
+        btns1 = [Button("Tex", 100, 600, (0, 0, 0)),
+                 Button("Sally", 300, 600, (0, 0, 0)),
+                 Button("Floyd", 500, 600, (0, 0, 0)),
+                 Button("Amber", 100, 750, (0, 0, 0)),
+                 Button("Arnold", 300, 750, (0, 0, 0)),
+                 Button("Generate $$$", 500, 750, (0, 0, 0))]
         for btn in btns1:
             btn.draw(win)
 
@@ -253,7 +216,6 @@ def player_setup():
 def game_setup(dice_player):
     run = True
     clock = pygame.time.Clock()
-    away_choice = -1
 
     while run:
         clock.tick(60)
@@ -265,8 +227,8 @@ def game_setup(dice_player):
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 400))
         text = font.render("You Have $" + str(dice_player.cash), 1, (255, 0, 0))
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 300))
-        btns1 = [Button1("Join Game", 100, 600, (0, 0, 0)),
-                 Button1("Create A Game", 300, 600, (0, 0, 0))]
+        btns1 = [Button("Join Game", 100, 600, (0, 0, 0)),
+                 Button("Create A Game", 300, 600, (0, 0, 0))]
         for btn in btns1:
             btn.draw(win)
 
