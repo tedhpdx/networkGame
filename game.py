@@ -1,16 +1,45 @@
 from player import Player
 
+
 class Game:
-    def __init__(self,id):
+    def __init__(self, id):
         self.p1Went = False
         self.p2Went = False
         self.ready = False
         self.id = id
         self.moves = [None, None]
-        self.wins = [0,0]
+        self.wins = [0, 0]
         self.ties = 0
-        self.p0Name = ""
-        self.p1Name = ""
+        self.dice_player_0 = Player("", 0)
+        self.dice_player_1 = Player("", 0)
+
+    def finished(self):
+        if self.dice_player_0.finished and self.dice_player_1.finished == 1:
+            return True
+        else:
+            return False
+
+    def update_object(self, dice_player):
+        if dice_player.p == 0:
+            self.dice_player_0 = dice_player
+        elif dice_player.p == 1:
+            self.dice_player_1 = dice_player
+
+    def my_turn_yet(self):
+        if self.dice_player_0.my_turn == False:
+            return True
+
+    def get_winner(self):
+        if self.dice_player_0.roll_total < self.dice_player_1.roll_total:
+            self.dice_player_0.result["winner"] = True
+            return self.dice_player_0
+        elif self.dice_player_1.roll_total < self.dice_player_0.roll_total:
+            self.dice_player_1.result["winner"] = True
+            return self.dice_player_1
+        else:  # then scores are equal
+            self.dice_player_0.result["push"] = True
+            self.dice_player_1.result["push"] = True
+            return self.dice_player_0
 
     def get_player_move(self, p):
         """
@@ -19,11 +48,11 @@ class Game:
         """
         return self.moves[p]
 
-    def get_opponent_name(self, p):
-        if p == 0:
-            return self.p1Name
-        elif p == 1:
-            return self.p0Name
+    def get_opponent_name(self, dice_player):
+        if dice_player.p == 0:
+            return self.dice_player_1.name
+        elif dice_player.p == 1:
+            return self.dice_player_0.name
 
     def play(self, player, move):
 
@@ -33,33 +62,12 @@ class Game:
         else:
             self.p2Went = True
 
-
     def connected(self):
         return self.ready
 
     def bothWent(self):
         return self.p1Went and self.p2Went
 
-    def winner(self):
-
-        p1 = self.moves[0] #gets roll value for player 1
-        p2 = self.moves[1] #gets roll value for player 2
-        p1 = p1[1]
-        p2 = p2[1]
-
-        winner = -1
-        if p1 > p2:
-            winner = 0
-        elif p1 == p2:
-            winner = -1
-        else:
-            winner = 1
-        return winner
-
-
     def resetWent(self):
         self.p1Went = False
         self.p2Went = False
-
-
-

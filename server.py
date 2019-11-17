@@ -44,12 +44,7 @@ def threaded_client(conn, p, gameId):
                         elif p == 1:
                             game.p0Name = dice_roller.name
                         game.play(p, dice_roller)
-                #this is where we can store data in the game class for each of our players
-                #probs want to use a dictionary for each player with all their data inside
-                if p == 0:
-                    game.p0Name = dice_roller.name
-                elif p == 1:
-                    game.p1Name = dice_roller.name
+                game.update_object(dice_roller)
                 conn.sendall(pickle.dumps(game))
             else:
                 break
