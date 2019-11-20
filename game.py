@@ -13,8 +13,14 @@ class Game:
         self.dice_player_0 = Player("", 0)
         self.dice_player_1 = Player("", 0)
 
+    def get_opponent(self, dice_player):
+        if dice_player.p == 0:
+            return self.dice_player_1
+        elif dice_player.p == 1:
+            return self.dice_player_0
+
     def finished(self):
-        if self.dice_player_0.finished and self.dice_player_1.finished == 1:
+        if self.dice_player_0.finished and self.dice_player_1.finished:
             return True
         else:
             return False
@@ -25,9 +31,11 @@ class Game:
         elif dice_player.p == 1:
             self.dice_player_1 = dice_player
 
-    def my_turn_yet(self):
-        if self.dice_player_0.my_turn == False:
-            return True
+    def my_turn_yet(self, dice_player):
+        if dice_player.p == 0:
+            return self.dice_player_0.my_turn
+        elif dice_player.p == 1:
+            return self.dice_player_1.my_turn
 
     def get_winner(self):
         if self.dice_player_0.roll_total < self.dice_player_1.roll_total:

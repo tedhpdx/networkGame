@@ -5,7 +5,7 @@ from game import Game
 import pickle
 
 server = "localhost"
-port = 5550
+port = 5551
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -33,6 +33,7 @@ def threaded_client(conn, p, gameId):
             dice_roller = pickle.loads(data)
             if gameId in games:
                 game = games[gameId]
+                '''
                 if not data:
                     break
                 else:
@@ -44,6 +45,7 @@ def threaded_client(conn, p, gameId):
                         elif p == 1:
                             game.p0Name = dice_roller.name
                         game.play(p, dice_roller)
+                '''
                 game.update_object(dice_roller)
                 conn.sendall(pickle.dumps(game))
             else:
