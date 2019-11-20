@@ -8,6 +8,7 @@ class Button:
         self.y = y
         self.color = color
         self.value = value
+        self.selected = False
         self.width = 150
         self.height = 100
 

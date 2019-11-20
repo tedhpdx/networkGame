@@ -13,6 +13,7 @@ class Player():
         self.remaining_rolls = 6
         self.my_turn = False
         self.finished = False
+        self.roll_reduction = 0
         self.result = {
             "winner": False,
             "push": False,
