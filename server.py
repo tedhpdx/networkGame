@@ -9,7 +9,6 @@ server = "localhost"
 port = 5551
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 try:
     s.bind((server, port))
 except socket.error as e:
@@ -77,6 +76,7 @@ while True:
         games[gameId] = Game(gameId)
         print("Creating a new game...")
     else:
+        print("Ready")
         games[gameId].ready = True
         p = 1
     start_new_thread(threaded_client, (conn, p, gameId))

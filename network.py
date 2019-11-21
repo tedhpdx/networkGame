@@ -24,7 +24,7 @@ class Network:
         try:
             dice_player = pickle.dumps(data)
             self.client.send(dice_player)
-            something = pickle.loads(self.client.recv(2048))
+            something = pickle.loads(self.client.recv(8196))
             return something
         except socket.error as e:
             print(e)
