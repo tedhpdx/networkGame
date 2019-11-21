@@ -5,7 +5,7 @@ import pickle
 class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = "localhost"
+        self.server = "10.0.1.3"
         self.port = 5551
         self.addr = (self.server, self.port)
         self.p = self.connect()
@@ -24,7 +24,7 @@ class Network:
         try:
             dice_player = pickle.dumps(data)
             self.client.send(dice_player)
-            something = pickle.loads(self.client.recv(8196))
+            something = pickle.loads(self.client.recv(2048))
             return something
         except socket.error as e:
             print(e)

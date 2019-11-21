@@ -107,11 +107,11 @@ def draw_game_over_window(win, game, dice_player):
         else:
             text = font.render("You Lose!", 1, (font_color))
             win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 400))
-        pygame.display.update()
-        dice_player.reset()
+        #dice_player.reset()
         pygame.time.wait(1000)
-        win.fill((0, 0, 0))
-        create_a_game(dice_player)
+        #win.fill((0, 0, 0))
+        pygame.display.flip()
+        #create_a_game(dice_player)
     else:
         text = font.render("Waiting on them fools!", 1, (font_color))
         win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
@@ -128,6 +128,8 @@ def draw_wait_your_turn_window(win, game, dice_player):
     opponent = game.get_opponent(dice_player)
     text = font.render(str(opponent.roll_total), 1, (font_color))
     win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
+    if opponent.roll:
+        render_rolls(opponent)
     pygame.event.get()
     pygame.display.flip()
 

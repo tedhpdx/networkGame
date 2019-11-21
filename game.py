@@ -32,10 +32,12 @@ class Game:
             self.dice_player_1 = dice_player
 
     def my_turn_yet(self, dice_player):
-        if dice_player.p == 0:
-            return self.dice_player_0.my_turn
-        elif dice_player.p == 1:
-            return self.dice_player_1.my_turn
+        if dice_player.p == 0 and self.dice_player_1.my_turn is False:
+            return True
+        elif dice_player.p == 1 and self.dice_player_0.my_turn is False:
+            return True
+        else:
+            return False
 
     def get_winner(self):
         if self.dice_player_0.roll_total < self.dice_player_1.roll_total:
