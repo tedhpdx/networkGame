@@ -11,6 +11,14 @@ height = 1000
 win = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Client")
 
+
+
+mr_t_image = pygame.image.load('mr_t.jpg')
+
+pygame.mixer.init()
+slap_sound = pygame.mixer.Sound('slap.wav')
+
+
 font_type = "arial black"
 btn_color = (105, 105, 105)
 font_color = (192, 192, 192)
@@ -236,6 +244,7 @@ def welcome_screen():
         font = pygame.font.SysFont(font_type, 24)
         text = font.render("Welcome to the dice game!", 1, (font_color))
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
+        win.blit(mr_t_image, (250,500))
         text1 = font.render("Press Any Key", 1, (font_color))
         win.blit(text1, (width / 2 - text1.get_width() / 2, (height / 2 - text1.get_height() / 2) - 100))
 
@@ -245,6 +254,7 @@ def welcome_screen():
                 run = False
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONUP or event.type == pygame.KEYDOWN:
+                slap_sound.play()
                 run = False
 
         pygame.display.update()
