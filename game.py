@@ -51,13 +51,16 @@ class Game:
             self.dice_player_1.result["push"] = True
             return self.dice_player_0
 
+    def connected(self):
+        return self.ready
+'''
     def get_player_move(self, p):
         """
         :param p: [0,1]
         :return: Move
         """
         return self.moves[p]
-
+    
     def get_opponent_name(self, dice_player):
         if dice_player.p == 0:
             return self.dice_player_1.name
@@ -71,13 +74,13 @@ class Game:
             self.p1Went = True
         else:
             self.p2Went = True
+'''
 
-    def connected(self):
-        return self.ready
-
+'''
     def bothWent(self):
         return self.p1Went and self.p2Went
 
     def resetWent(self):
         self.p1Went = False
         self.p2Went = False
+'''

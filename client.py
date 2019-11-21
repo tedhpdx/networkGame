@@ -46,8 +46,8 @@ def redrawWindow(win, game, dice_player):
 
         text = font.render("Opponent", 1, (font_color))
         win.blit(text, (380, 200))
-        opponent = game.get_opponent_name(dice_player)
-        text = font.render(opponent, 1, (0, 255, 255))
+        opponent = game.get_opponent(dice_player)
+        text = font.render(opponent.name, 1, (0, 255, 255))
         win.blit(text, (380, 400))
 
         if dice_player.rolled is False and dice_player.remaining_rolls != 0:
@@ -253,8 +253,8 @@ def welcome_screen():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-            if event.type == pygame.MOUSEBUTTONUP or event.type == pygame.KEYDOWN:
-                slap_sound.play()
+            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                #slap_sound.play()
                 run = False
 
         pygame.display.update()
@@ -335,8 +335,10 @@ def game_setup(dice_player):
                     if btn.click(pos):
                         if btn.text == "Join Game":
                             pass
+                            #join_a_game(dice_player)
                         if btn.text == "Create A Game":
                             pass
+                            #create_a_game(dice_player)
                         run = False
         pygame.display.update()
     create_a_game(dice_player)
