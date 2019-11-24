@@ -1,8 +1,10 @@
 from random import randint
 import pygame
+from game_param import GameParam
 from network import Network
 from player import Player
 from button import Button
+from get_games import Get_Games
 
 pygame.font.init()
 
@@ -106,10 +108,10 @@ def draw_game_over_window(win, game, dice_player):
     win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 100))
     if game.finished():
         winner = game.get_winner()
-        if winner.result["push"] is True:
+        if winner and winner.result["push"] is True:
             text = font.render("Push!", 1, (font_color))
             win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
-        elif winner.p == dice_player.p:
+        elif winner and winner.p == dice_player.p:
             text = font.render("You Win!", 1, (font_color))
             win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 300))
         else:
@@ -142,96 +144,7 @@ def draw_wait_your_turn_window(win, game, dice_player):
     pygame.display.flip()
 
 
-def create_a_game(dice_player):
-    run = True
-    clock = pygame.time.Clock()
-    n = Network()
-    dice_player.p = int(n.getP())
-    away_choice = 2
 
-    if dice_player.p == 0:
-        dice_player.my_turn = True
-        game = n.send(dice_player)
-
-    while run:
-        clock.tick(60)
-        font = pygame.font.SysFont(font_type, 48)
-        try:
-            dice_player.pickle_string = "get"
-            game = n.send(dice_player)
-        except:
-            run = False
-            print("Couldn't get game")
-            break
-        opponent = game.get_opponent(dice_player)
-        if dice_player.my_turn is True and dice_player.finished is False:
-            if dice_player.rolled is False:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        run = False
-                        pygame.quit()
-                    if event.type == pygame.MOUSEBUTTONUP:
-                        pos = pygame.mouse.get_pos()
-                        if roll_btn.click(pos) and game.connected():
-                            get_ready(dice_player)
-                            dice_player.roll_dice()
-                            if dice_player.remaining_rolls == 6:
-                                dice_player.remaining_rolls -= 1
-                            dice_player.rolled = True
-                            game = n.send(dice_player)
-                            if dice_player.remaining_rolls == 0:
-                                dice_player.my_turn = False
-                                dice_player.finished = True
-                                dice_player.rolled = False
-                                game = n.send(dice_player)
-                    redrawWindow(win, game, dice_player)
-            else:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        run = False
-                        pygame.quit()
-                    if event.type == pygame.MOUSEBUTTONUP and dice_player.rolled is True:
-                        pos = pygame.mouse.get_pos()
-                        for choice in choice_buttons:
-                            if choice.click(pos) and choice.selected is True:
-                                choice.color = (btn_color)
-                                if dice_player.roll[choice.value] != away_choice:
-                                    dice_player.roll_total -= dice_player.roll[choice.value]
-                                dice_player.roll_reduction -= 1
-                                choice.selected = False
-                                game = n.send(dice_player)
-                            elif choice.click(pos) and game.connected():
-                                choice.color = (12, 23, 0)
-                                choice.selected = True
-                                if dice_player.roll[choice.value] != away_choice:
-                                    dice_player.roll_total += dice_player.roll[choice.value]
-                                dice_player.roll_reduction += 1
-                                game = n.send(dice_player)
-                        if keep_button.click(pos):
-                            keep_button.color = (12, 23, 0)
-                            game = n.send(dice_player)
-                            dice_player.rolled = False
-                    redrawWindow(win, game, dice_player)
-        elif dice_player.my_turn is False and dice_player.finished is False:
-            game = n.send(dice_player)
-            draw_wait_your_turn_window(win, game, dice_player)
-            if game.my_turn_yet(dice_player):
-                dice_player.my_turn = True
-        elif dice_player.finished is True:
-            draw_game_over_window(win, game, dice_player)
-
-
-def get_ready(dice_player):
-    dice_player.remaining_rolls -= dice_player.roll_reduction
-    dice_player.roll_reduction = 0
-    reset_buttons()
-
-
-def reset_buttons():
-    for choice in choice_buttons:
-        choice.color = (btn_color)
-        choice.selected = False
-    keep_button.color = (btn_color)
 
 
 def welcome_screen():
@@ -329,19 +242,238 @@ def game_setup(dice_player):
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 for btn in btns1:
                     if btn.click(pos):
                         if btn.text == "Join Game":
-                            pass
-                            #join_a_game(dice_player)
+                            join_game_screen(dice_player)
                         if btn.text == "Create A Game":
-                            pass
-                            #create_a_game(dice_player)
+                            create_game_screen(dice_player)
                         run = False
         pygame.display.update()
-    create_a_game(dice_player)
+
+
+def join_game_screen(dice_player):
+    n = Network()
+    g = Get_Games("join")
+    n.connect(g)
+    dict_choice = draw_join_game_screen(n.games, dice_player)
+    g = Get_Games("join", dict_choice)
+    n.send(g)
+    dice_player.ready = True
+    game = n.send(dice_player)
+    create_a_game(n, game, dice_player)
+
+
+def draw_join_game_screen(game_dict, dice_player):
+    run = True
+    clock = pygame.time.Clock()
+
+    while run:
+
+        clock.tick(60)
+        win.fill((0, 0, 0))
+        font = pygame.font.SysFont(font_type, 24)
+        text = font.render("Join a Game", 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 484))
+        games = [Button("1", 25, 100, (btn_color)),
+                 Button("2", 225, 100, (btn_color)),
+                 Button("3", 425, 100, (btn_color)),
+                 Button("4", 625, 100, (btn_color)),
+                 Button("5", 825, 100, (btn_color))]
+        button_count = 0
+        for game in games:
+            if (button_count < game_dict.__len__()):
+                game.draw(win)
+            else:
+                break
+            button_count += 1
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                for game in games:
+                    if game.click(pos):
+                        if game.text == "1":
+                            return 1
+                        if game.text == "2":
+                            return 2
+        pygame.display.flip()
+
+
+def create_game_screen(dice_player):
+    run = True
+    clock = pygame.time.Clock()
+
+    while run:
+
+        clock.tick(60)
+        win.fill((0, 0, 0))
+        font = pygame.font.SysFont(font_type, 24)
+        text = font.render("Create Game", 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 484))
+        text = font.render("Number of Players", 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 450))
+        number_of_players = [Button("1", 25, 100, (btn_color)),
+                             Button("2", 225, 100, (btn_color)),
+                             Button("3", 425, 100, (btn_color)),
+                             Button("4", 625, 100, (btn_color)),
+                             Button("5", 825, 100, (btn_color))]
+        for num in number_of_players:
+            num.draw(win)
+
+        text = font.render("Rounds", 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 250))
+        rounds = [Button("5", 25, 300, (btn_color)),
+                  Button("10", 225, 300, (btn_color)),
+                  Button("15", 425, 300, (btn_color)),
+                  Button("20", 625, 300, (btn_color)),
+                  Button("All or Nothing", 825, 300, (btn_color))]
+        for round in rounds:
+            round.draw(win)
+
+        text = font.render("Ante", 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 50))
+        rounds = [Button("2", 25, 500, (btn_color)),
+                  Button("5", 225, 500, (btn_color)),
+                  Button("10", 425, 500, (btn_color)),
+                  Button("20", 625, 500, (btn_color)),
+                  Button("100", 825, 500, (btn_color))]
+        for round in rounds:
+            round.draw(win)
+
+        text = font.render("Choose Away", 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) + 150))
+        rounds = [Button("1's", 200, 700, (btn_color)),
+                  Button("2's", 400, 700, (btn_color)),
+                  Button("3's", 600, 700, (btn_color)),
+                  Button("4's", 200, 850, (btn_color)),
+                  Button("5's", 400, 850, (btn_color)),
+                  Button("6's", 600, 850, (btn_color))]
+        for round in rounds:
+            round.draw(win)
+
+        game_params = GameParam(2, 5, 10, 2)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                for num in number_of_players:
+                    if num.click(pos):
+                        if num.text == "1":
+                            dice_player.ready = True
+                            connect(dice_player, game_params)
+                        if num.text == "2":
+                            pass
+        pygame.display.update()
+    connect(dice_player, game_params)
+
+
+def connect(dice_player, game_params):
+    n = Network()
+    g = Get_Games("create")
+    n.connect(g)
+    dice_player.p = int(n.getP())
+    n.send(dice_player)
+    game = n.send(game_params)
+    create_a_game(n, game, dice_player)
+
+
+def create_a_game(n, game, dice_player):
+    run = True
+    clock = pygame.time.Clock()
+
+    dice_player.p = game.active_players
+
+    if dice_player.p == 0:
+        dice_player.my_turn = True
+        game = n.send(dice_player)
+
+    while run:
+        game = n.send(dice_player)
+        clock.tick(60)
+        font = pygame.font.SysFont(font_type, 48)
+        if dice_player.my_turn is True and dice_player.finished is False:
+            if dice_player.rolled is False:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        run = False
+                        pygame.quit()
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        pos = pygame.mouse.get_pos()
+                        if roll_btn.click(pos) and game.connected():
+                            get_ready(dice_player)
+                            dice_player.roll_dice()
+                            if dice_player.remaining_rolls == 6:
+                                dice_player.remaining_rolls -= 1
+                            dice_player.rolled = True
+                            game = n.send(dice_player)
+                            if dice_player.remaining_rolls == 0:
+                                dice_player.my_turn = False
+                                dice_player.finished = True
+                                dice_player.rolled = False
+                                game = n.send(dice_player)
+                    redrawWindow(win, game, dice_player)
+            else:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        run = False
+                        pygame.quit()
+                    if event.type == pygame.MOUSEBUTTONUP and dice_player.rolled is True:
+                        pos = pygame.mouse.get_pos()
+                        for choice in choice_buttons:
+                            if choice.click(pos) and choice.selected is True:
+                                choice.color = (btn_color)
+                                if dice_player.roll[choice.value] != game.away_choice:
+                                    dice_player.roll_total -= dice_player.roll[choice.value]
+                                dice_player.roll_reduction -= 1
+                                choice.selected = False
+                                game = n.send(dice_player)
+                            elif choice.click(pos) and game.connected():
+                                choice.color = (12, 23, 0)
+                                choice.selected = True
+                                if dice_player.roll[choice.value] != game.away_choice:
+                                    dice_player.roll_total += dice_player.roll[choice.value]
+                                dice_player.roll_reduction += 1
+                                game = n.send(dice_player)
+                        if keep_button.click(pos):
+                            keep_button.color = (12, 23, 0)
+                            dice_player.final_total = dice_player.roll_total
+                            if dice_player.roll_total > game.top_total:
+                                dice_player.busted = True
+                                dice_player.remaining_rolls = 0
+                                dice_player.finished = True
+                            game = n.send(dice_player)
+                            dice_player.rolled = False
+                    redrawWindow(win, game, dice_player)
+        elif dice_player.my_turn is False and dice_player.finished is False:
+            game = n.send(dice_player)
+            draw_wait_your_turn_window(win, game, dice_player)
+            if game.my_turn_yet(dice_player):
+                dice_player.my_turn = True
+        elif dice_player.finished is True:
+            draw_game_over_window(win, game, dice_player)
+
+
+def get_ready(dice_player):
+    dice_player.remaining_rolls -= dice_player.roll_reduction
+    dice_player.roll_reduction = 0
+    reset_buttons()
+
+
+def reset_buttons():
+    for choice in choice_buttons:
+        choice.color = (btn_color)
+        choice.selected = False
+    keep_button.color = (btn_color)
+
+
 
 while True:
     welcome_screen()

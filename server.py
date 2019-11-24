@@ -5,8 +5,8 @@ from player import Player
 from game import Game
 import pickle
 
-server = "10.0.1.3"
-port = 5551
+server = "localhost"
+port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -24,58 +24,62 @@ idCount = 0
 
 def threaded_client(conn, p, gameId):
     global idCount
-    conn.send(str.encode(str(p)))
+    #conn.send(str.encode(str(p)))
 
     while True:
         try:
-            dice_roller = Player("", 0)
             data = conn.recv(4096)
-            dice_roller = pickle.loads(data)
+            client_data = pickle.loads(data)
+
             if gameId in games:
                 game = games[gameId]
-                '''
-                if not data:
-                    break
-                else:
-                    if dice_roller.pickle_string == "reset":
-                        game.resetWent()
-                    elif dice_roller.pickle_string != "get":
-                        if p == 0:
-                            game.p1Name = dice_roller.name
-                        elif p == 1:
-                            game.p0Name = dice_roller.name
-                        game.play(p, dice_roller)
-                '''
-                game.update_object(dice_roller)
+                if client_data.pickle_string == "game":
+                    game.update_game(client_data)
+                if client_data.pickle_string == "player":
+                    game.update_object(client_data)
                 conn.sendall(pickle.dumps(game))
             else:
                 break
-        except:
-            pass
+        except socket.error as e:
+            print(e)
 
     print("Lost Connection")
     try:
         del games[gameId]
         print("Closing game")
     except:
-        pass
+        print("delete game error")
     idCount -= 1
     conn.close()
 
 
-currentPlayer = 0
 while True:
-    conn, addr = s.accept()
-    print("Connected to:", addr)
-
-    idCount += 1
-    p = 0
-    gameId = (idCount - 1) // 2
-    if idCount % 2 == 1:
-        games[gameId] = Game(gameId)
-        print("Creating a new game...")
-    else:
-        print("Ready")
-        games[gameId].ready = True
-        p = 1
-    start_new_thread(threaded_client, (conn, p, gameId))
+    try:
+        p = 0
+        conn, addr = s.accept()
+        print("Connected to:", addr)
+        data = conn.recv(4096)
+        client_data = pickle.loads(data)
+        client_pack = {"games": games, "p": None}
+        if client_data.pickle_string == "join" and client_data.gameId is None:
+            p += 1
+            conn.sendall(pickle.dumps(client_pack))
+            data = conn.recv(4096)
+            client_data = pickle.loads(data)
+            if client_data.pickle_string == "join" and client_data.gameId is not None:
+                conn.sendall(pickle.dumps(client_pack))
+                print("Connecting to game")
+                games[idCount].add_active_player()
+                start_new_thread(threaded_client, (conn, p, client_data.gameId))
+        elif client_data.pickle_string == "create":
+            idCount += 1
+            gameId = idCount
+            games[gameId] = Game(gameId)
+            client_pack["games"] = games
+            client_pack["p"] = p
+            conn.sendall(pickle.dumps(client_pack))
+            print("Creating a new Game")
+            start_new_thread(threaded_client, (conn, p, gameId))
+    except socket.error as e:
+        print("error")
+        print (e)

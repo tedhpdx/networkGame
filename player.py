@@ -3,17 +3,20 @@ from random import randint
 
 class Player():
     def __init__(self, name, cash):
-        self.pickle_string = ""
+        self.pickle_string = "player"
         self.p = None
+        self.ready = False
         self.name = name
         self.cash = cash
         self.rolled = False
         self.roll = []
         self.roll_total = 0
+        self.final_total = 0
         self.remaining_rolls = 6
         self.my_turn = False
         self.finished = False
         self.roll_reduction = 0
+        self.busted = False
         self.result = {
             "winner": False,
             "push": False,
