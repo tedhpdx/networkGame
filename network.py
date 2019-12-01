@@ -7,12 +7,16 @@ class Network:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = "localhost"
         self.port = 55556
+        self.global_id = 0
         self.addr = (self.server, self.port)
         self.p = None
         self.games = {}
 
     def getP(self):
         return self.p
+
+    def get_global_id(self):
+        return self.global_id
 
     def connect(self, net_pack=None):
         try:
@@ -23,8 +27,10 @@ class Network:
                 server_pack = pickle.loads(self.client.recv(2048))
                 self.games = server_pack["games"]
                 self.p = server_pack["p"]
+                self.global_id = server_pack["global_id"]
         except socket.error as e:
             print(e)
+            return -1
 
     def send(self, net_pack):
         try:

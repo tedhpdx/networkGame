@@ -34,9 +34,16 @@ def threaded_client(conn, p, gameId):
                 game = games[gameId]
                 if client_data.pickle_string == "game":
                     game.update_game(client_data)
+                    if client_data.in_progress:
+                        game.in_progress = True
                 if client_data.pickle_string == "player":
                     dice_player = client_data
                     game.update_object(dice_player)
+                    if client_data.left_game is True:
+                        if game.remove_player(dice_player) == -1:
+                            break
+                        conn.sendall(pickle.dumps(game))
+                        return
                     if client_data.killed_game is True:
                         game.killed = True
                         pickle.dumps(game)
@@ -62,16 +69,18 @@ def threaded_client(conn, p, gameId):
     print("idCount: " + str(idCount))
     conn.close()
 
+
+global_id = 1000
 while True:
     try:
         p = 0
+        global_id += 1
         conn, addr = s.accept()
         print("Connected to:", addr)
         data = conn.recv(4096)
         client_data = pickle.loads(data)
-        client_pack = {"games": games, "p": None}
+        client_pack = {"games": games, "p": None, "global_id": global_id}
         if client_data.pickle_string == "join" and client_data.gameId is None:
-            p += 0
             client_pack["p"] = p
             conn.sendall(pickle.dumps(client_pack))
             data = conn.recv(4096)

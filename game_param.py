@@ -6,3 +6,4 @@ class GameParam():
         self.away_choice = away_choice
         self.killed = False
         self.pickle_string = "game"
+        self.in_progress = False

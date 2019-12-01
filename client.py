@@ -99,6 +99,7 @@ def render_total(dice_player):
 
 def draw_game_over_window(win, game, dice_player):
     win.fill((0, 0, 0))
+    draw_scoreboard(win, game, dice_player)
     font = pygame.font.SysFont(font_type, 48)
     text = font.render("Game over fool!", 1, (font_color))
     win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2))
@@ -158,11 +159,11 @@ def draw_scoreboard(win, game, dice_player):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-            pygame.quit()
+            dice_player.left_game = True
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
             if btn.click(pos):
-                dice_player.killed_game = True
+                dice_player.left_game = True
 
 
 def welcome_screen():
@@ -275,12 +276,20 @@ def join_game_screen(dice_player):
     g = Get_Games("join")
     n.connect(g)
     dice_player.p = int(n.getP())
+    dice_player.global_id = n.get_global_id()
     dict_choice = draw_join_game_screen(n.games, dice_player)
     g = Get_Games("join", dict_choice)
+    dice_player.p = n.games[dict_choice].active_players
     n.send(g)
     dice_player.ready = True
-    game = n.send(dice_player)
-    dice_player.p = game.active_players - 1
+    game = n.games[dict_choice]
+    if game.in_progress:
+        high_p = 0
+        for d in game.dice_players:
+            if game.dice_players[d].p >= high_p:
+                high_p = game.dice_players[d].p
+                dice_player.p = high_p
+        dice_player.p += 1
     game = n.send(dice_player)
     create_a_game(n, game, dice_player)
 
@@ -398,8 +407,11 @@ def create_game_screen(dice_player):
 def connect(dice_player, game_params):
     n = Network()
     g = Get_Games("create")
-    n.connect(g)
+    if n.connect(g) == -1:
+        create_game_screen(dice_player)
+        return
     dice_player.p = int(n.getP())
+    dice_player.global_id = n.get_global_id()
     n.send(dice_player)
     game = n.send(game_params)
     create_a_game(n, game, dice_player)
@@ -409,13 +421,17 @@ def create_a_game(n, game, dice_player):
     run = True
     clock = pygame.time.Clock()
 
-    if dice_player.p == 0:
+
+    if dice_player.p == 0 or game.in_progress:
         dice_player.my_turn = True
         game = n.send(dice_player)
 
     while run:
         game = n.send(dice_player)
         if game == -1:
+            run = False
+            pygame.quit()
+        if dice_player.left_game is True:
             run = False
             pygame.quit()
         clock.tick(60)
@@ -428,12 +444,17 @@ def create_a_game(n, game, dice_player):
             if game.my_turn_yet(dice_player):
                 dice_player.my_turn = True
         elif dice_player.my_turn is True and dice_player.finished is False:
+            in_progress = GameParam(0,0,0,0)
+            in_progress.in_progress = True
+            n.send(in_progress)
             if dice_player.rolled is False:
                 dice_player.rolling = True
                 game = n.send(dice_player)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         run = False
+                        dice_player.left_game = True
+                        game = n.send(dice_player)
                         pygame.quit()
                     if event.type == pygame.MOUSEBUTTONUP:
                         pos = pygame.mouse.get_pos()

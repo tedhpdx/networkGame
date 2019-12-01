@@ -13,6 +13,7 @@ class Game:
         self.active_players = 0
         self.top_total = 100
         self.killed = False
+        self.in_progress = False
 
 
     def update_game(self, game_params):
@@ -52,10 +53,9 @@ class Game:
         self.active_players += 1
 
     def update_object(self, dice_player):
-        if (dice_player.p != None):
-            self.dice_players[dice_player.p] = dice_player
-            if dice_player.remaining_rolls == 0 and dice_player.final_total < self.top_total:
-                self.top_total = dice_player.roll_total
+        self.dice_players[dice_player.p] = dice_player
+        if dice_player.remaining_rolls == 0 and dice_player.final_total < self.top_total:
+            self.top_total = dice_player.roll_total
 
         '''
         if dice_player.p == 0:
@@ -64,9 +64,25 @@ class Game:
             self.dice_player_1 = dice_player
         '''
     def my_turn_yet(self, dice_player):
-        if self.dice_players[dice_player.p - 1].finished is True:
-            return True
+        flag = False
+        for d in self.dice_players:
+            if self.dice_players[d].finished is not True and flag is True and self.dice_players[d].p == dice_player.p:
+                return True
+            if self.dice_players[d].finished:
+                flag = True
+            else:
+                flag = False
         return False
+
+    def remove_player(self, dice_player):
+        for d in self.dice_players:
+            if self.dice_players[d] == dice_player:
+                del self.dice_players[d]
+                self.active_players -= 1
+                if (self.active_players <= 0):
+                    return -1
+                break
+
 
     def get_winner(self):
         for d in self.dice_players:
