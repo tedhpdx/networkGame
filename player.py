@@ -4,11 +4,12 @@ from random import randint
 class Player():
     def __init__(self, name, cash):
         self.pickle_string = "player"
-        self.p = None
+        self.p = 0
         self.ready = False
         self.name = name
         self.cash = cash
         self.rolled = False
+        self.rolling = False
         self.roll = []
         self.roll_total = 0
         self.final_total = 0
@@ -17,6 +18,7 @@ class Player():
         self.finished = False
         self.roll_reduction = 0
         self.busted = False
+        self.killed_game = False
         self.result = {
             "winner": False,
             "push": False,

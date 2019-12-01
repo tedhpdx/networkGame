@@ -5,8 +5,6 @@ class Game:
     def __init__(self, id):
         self.ready = False
         self.id = id
-        self.dice_player_0 = Player("", 0)
-        self.dice_player_1 = Player("", 0)
         self.dice_players = {}
         self.number_of_players = 0
         self.rounds = 0
@@ -14,6 +12,8 @@ class Game:
         self.away_choice = 0
         self.active_players = 0
         self.top_total = 100
+        self.killed = False
+
 
     def update_game(self, game_params):
         self.number_of_players = game_params.num_players
@@ -25,13 +25,19 @@ class Game:
         if t_t < self.top_total:
             self.top_total = t_t
 
-    def get_opponent(self, dice_player):
-        if dice_player.p == 0:
-            return self.dice_player_1
-        elif dice_player.p == 1:
-            return self.dice_player_0
-        elif dice_player.p == 2:
-            return self.dice_players[0]
+    def get_opponents(self, dice_player):
+        opponents = {}
+        i = 0
+        for player in self.dice_players:
+            if self.dice_players[player].p != dice_player.p:
+                opponents[i] = self.dice_players[player]
+                i += 1
+        return opponents
+
+    def whos_rolling(self):
+        for player in self.dice_players:
+            if self.dice_players[player].rolling is True:
+                return self.dice_players[player]
 
     def get_opp_dict(self):
         return self.dice_players
@@ -46,20 +52,21 @@ class Game:
         self.active_players += 1
 
     def update_object(self, dice_player):
-        self.dice_players[dice_player.p] = dice_player
-        if dice_player.remaining_rolls == 0 and dice_player.final_total < self.top_total:
-            self.top_total = dice_player.roll_total
+        if (dice_player.p != None):
+            self.dice_players[dice_player.p] = dice_player
+            if dice_player.remaining_rolls == 0 and dice_player.final_total < self.top_total:
+                self.top_total = dice_player.roll_total
 
+        '''
         if dice_player.p == 0:
             self.dice_player_0 = dice_player
         elif dice_player.p == 1:
             self.dice_player_1 = dice_player
-
+        '''
     def my_turn_yet(self, dice_player):
-        for d in self.dice_players:
-            if self.dice_players[d].my_turn is True:
-                return False
-        return True
+        if self.dice_players[dice_player.p - 1].finished is True:
+            return True
+        return False
 
     def get_winner(self):
         for d in self.dice_players:
@@ -81,9 +88,11 @@ class Game:
         '''
 
     def connected(self):
+        if self.active_players < 3:
+            return False
+        '''
         for d in self.dice_players:
-            if self.active_players < 1:
-                return False
             if d and self.dice_players[d].ready is False:
                 return False
+        '''
         return True

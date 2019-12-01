@@ -9,8 +9,8 @@ class Button:
         self.color = color
         self.value = value
         self.selected = False
-        self.width = 150
-        self.height = 100
+        self.width = 100
+        self.height = 50
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))

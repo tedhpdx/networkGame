@@ -8,12 +8,11 @@ from get_games import Get_Games
 
 pygame.font.init()
 
-width = 1000
-height = 1000
+width = 640
+height = 480
+p = 0
 win = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Client")
-
-
+pygame.display.set_caption("Dice Game!")
 
 mr_t_image = pygame.image.load('mr_t.jpg')
 
@@ -24,72 +23,71 @@ slap_sound = pygame.mixer.Sound('slap.wav')
 font_type = "arial black"
 btn_color = (105, 105, 105)
 font_color = (192, 192, 192)
-roll_btn = Button("Roll", 50, 500, (btn_color), 0)
-keep_button = Button("Keep Selected", 300, 600, (btn_color), 0)
-choice_buttons = [Button("Die #1", 0, 500, (btn_color), 0),
-                  Button("Die #2", 200, 500, (btn_color), 1),
-                  Button("Die #3", 400, 500, (btn_color), 2),
-                  Button("Die #4", 600, 500, (btn_color), 3),
-                  Button("Die #5", 800, 500, (btn_color), 4)]
-finish_btn = Button("Finish Round", 50, 500, (btn_color), 0)
+roll_btn = Button("Roll", 50, 350, (btn_color), 0)
+keep_button = Button("Keep 'em", 270, 410, (btn_color), 0)
+choice_buttons = [Button("Die #1", 50, 350, (btn_color), 0),
+                  Button("Die #2", 160, 350, (btn_color), 1),
+                  Button("Die #3", 270, 350, (btn_color), 2),
+                  Button("Die #4", 380, 350, (btn_color), 3),
+                  Button("Die #5", 490, 350, (btn_color), 4)]
+finish_btn = Button("Finish Round", 50, 350, (btn_color), 0)
 
 
-
-def redrawWindow(win, game, dice_player):
+def draw_waiting(win, game, dice_player):
     win.fill((0, 0, 0))
-    if not (game.connected()):
-        font = pygame.font.SysFont(font_type, 48)
-        text = font.render("Waiting for Player...", 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2))
-    else:
-        font = pygame.font.SysFont(font_type, 36)
-        text = font.render("Your roll", 1, (font_color))
-        win.blit(text, (80, 200))
+    font = pygame.font.SysFont(font_type, 48)
+    text = font.render("Waiting for Players...", 1, font_color)
+    draw_scoreboard(win, game, dice_player)
+    win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2))
+    pygame.event.get()
+    pygame.display.flip()
 
-        text = font.render("Opponent", 1, (font_color))
-        win.blit(text, (380, 200))
-        opponent = game.get_opponent(dice_player)
-        text = font.render(opponent.name, 1, (0, 255, 255))
-        win.blit(text, (380, 400))
 
-        if dice_player.rolled is False and dice_player.remaining_rolls != 0:
-            if dice_player.remaining_rolls == 1:
-                finish_btn.draw(win)
-            else:
-                roll_btn.draw(win)
-            render_total(dice_player)
-        elif dice_player.rolled is True and dice_player.remaining_rolls != 0:
-            button_count = 0
-            keep_button.draw(win)
-            for choice in choice_buttons:
-                if button_count < dice_player.remaining_rolls:
-                    choice.draw(win)
-                else:
-                    break
-                button_count += 1
+def draw_roll_window(win, game, dice_player):
+    win.fill((0, 0, 0))
+    font = pygame.font.SysFont(font_type, 24)
+    draw_scoreboard(win, game, dice_player)
+    text = font.render("Your roll", 1, font_color)
+    win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
+
+    if dice_player.rolled is False and dice_player.remaining_rolls != 0:
+        if dice_player.remaining_rolls == 1:
+            finish_btn.draw(win)
         else:
-            draw_game_over_window(win, game, dice_player)
-        if dice_player.rolled is True:
-            render_rolls(dice_player)
-    pygame.display.update()
+            roll_btn.draw(win)
+        render_total(dice_player)
+    elif dice_player.rolled is True and dice_player.remaining_rolls != 0:
+        button_count = 0
+        keep_button.draw(win)
+        for choice in choice_buttons:
+            if button_count < dice_player.remaining_rolls:
+                choice.draw(win)
+            else:
+                break
+            button_count += 1
+    else:
+        draw_game_over_window(win, game, dice_player)
+    if dice_player.rolled is True:
+        render_rolls(dice_player)
+    pygame.display.flip()
 
 
 def render_rolls(dice_player):
-    font = pygame.font.SysFont(font_type, 36)
-    text1 = font.render("Die #1: " + str(dice_player.roll[0]), 1, (font_color))
-    win.blit(text1, (80, 250))
+    font = pygame.font.SysFont(font_type, 24)
+    text = font.render("Die #1: " + str(dice_player.roll[0]), 1, (font_color))
+    win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 150))
     if dice_player.remaining_rolls > 1:
-        text2 = font.render("Die #2: " + str(dice_player.roll[1]), 1, (font_color))
-        win.blit(text2, (80, 300))
+        text = font.render("Die #2: " + str(dice_player.roll[1]), 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 100))
     if dice_player.remaining_rolls > 2:
-        text3 = font.render("Die #3: " + str(dice_player.roll[2]), 1, (font_color))
-        win.blit(text3, (80, 350))
+        text = font.render("Die #3: " + str(dice_player.roll[2]), 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 50))
     if dice_player.remaining_rolls > 3:
-        text4 = font.render("Die #4: " + str(dice_player.roll[3]), 1, (font_color))
-        win.blit(text4, (80, 400))
+        text = font.render("Die #4: " + str(dice_player.roll[3]), 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 + 0))
     if dice_player.remaining_rolls > 4:
-        text5 = font.render("Die #5: " + str(dice_player.roll[4]), 1, (font_color))
-        win.blit(text5, (80, 450))
+        text = font.render("Die #5: " + str(dice_player.roll[4]), 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 + 50))
     render_total(dice_player)
 
 
@@ -117,11 +115,11 @@ def draw_game_over_window(win, game, dice_player):
         else:
             text = font.render("You Lose!", 1, (font_color))
             win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 400))
-        #dice_player.reset()
+        # dice_player.reset()
         pygame.time.wait(1000)
-        #win.fill((0, 0, 0))
+        # win.fill((0, 0, 0))
         pygame.display.flip()
-        #create_a_game(dice_player)
+        # create_a_game(dice_player)
     else:
         text = font.render("Waiting on them fools!", 1, (font_color))
         win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
@@ -132,19 +130,39 @@ def draw_game_over_window(win, game, dice_player):
 
 def draw_wait_your_turn_window(win, game, dice_player):
     win.fill((0, 0, 0))
-    font = pygame.font.SysFont(font_type, 48)
-    text = font.render("Wait, it's not your turn yet fool!", 1, (font_color))
-    win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2))
-    opponent = game.get_opponent(dice_player)
-    text = font.render(str(opponent.roll_total), 1, (font_color))
-    win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
-    if opponent.roll:
-        render_rolls(opponent)
+    font = pygame.font.SysFont(font_type, 24)
+    rolling_player = game.whos_rolling()
+    if rolling_player:
+        text = font.render("Currently Rolling " + rolling_player.name, 1, (font_color))
+        win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
+    draw_scoreboard(win, game, dice_player)
     pygame.event.get()
     pygame.display.flip()
 
 
-
+def draw_scoreboard(win, game, dice_player):
+    font = pygame.font.SysFont(font_type, 16)
+    opponents = game.get_opponents(dice_player)
+    x_offset = 280
+    y_offset = 220
+    for opponent in opponents:
+        text = font.render(opponents[opponent].name, 1, (0, 255, 255))
+        win.blit(text, (width / 2 - text.get_width() / 2 - x_offset, height / 2 - text.get_height() / 2 - y_offset))
+        text = font.render(str(opponents[opponent].roll_total), 1, (0, 255, 255))
+        win.blit(text, (width / 2 - text.get_width() / 2 - x_offset + 40, height / 2 - text.get_height() / 2 - y_offset))
+        y_offset -= 20
+        if opponents[opponent].roll and opponents[opponent].rolling:
+            render_rolls(opponents[opponent])
+    btn = Button("Exit", 100, 10, (btn_color))
+    btn.draw(win)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+            pygame.quit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            if btn.click(pos):
+                dice_player.killed_game = True
 
 
 def welcome_screen():
@@ -157,17 +175,16 @@ def welcome_screen():
         font = pygame.font.SysFont(font_type, 24)
         text = font.render("Welcome to the dice game!", 1, (font_color))
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
-        win.blit(mr_t_image, (250,500))
+        win.blit(mr_t_image, (width/2 - 250, height/2 - 100))
         text1 = font.render("Press Any Key", 1, (font_color))
-        win.blit(text1, (width / 2 - text1.get_width() / 2, (height / 2 - text1.get_height() / 2) - 100))
-
+        win.blit(text1, (width / 2 - text1.get_width() / 2, (height / 2 - text1.get_height() / 2) - 150))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
-                #slap_sound.play()
+                # slap_sound.play()
                 run = False
 
         pygame.display.update()
@@ -183,16 +200,16 @@ def player_setup():
         clock.tick(60)
         win.fill((0, 0, 0))
         font = pygame.font.SysFont(font_type, 24)
-        text = font.render("Hi there!", 1, (font_color))
+        text = font.render("What up!?", 1, (font_color))
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
         text1 = font.render("Please choose your character", 1, (font_color))
         win.blit(text1, (width / 2 - text1.get_width() / 2, (height / 2 - text1.get_height() / 2) - 100))
-        btns1 = [Button("Tex", 200, 600, (btn_color)),
-                 Button("Sally", 400, 600, (btn_color)),
-                 Button("Floyd", 600, 600, (btn_color)),
-                 Button("Amber", 200, 750, (btn_color)),
-                 Button("Arnold", 400, 750, (btn_color)),
-                 Button("Generate $$$", 600, 750, (btn_color))]
+        btns1 = [Button("Tex", 125, 240, (btn_color)),
+                 Button("Sally", 275, 240, (btn_color)),
+                 Button("Floyd", 425, 240, (btn_color)),
+                 Button("Amber", 125, 340, (btn_color)),
+                 Button("Arnold", 275, 340, (btn_color)),
+                 Button("$$$", 425, 340, (btn_color))]
         for btn in btns1:
             btn.draw(win)
 
@@ -200,11 +217,11 @@ def player_setup():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 for btn in btns1:
                     if btn.click(pos):
-                        if btn.text == "Generate $$$":
+                        if btn.text == "$$$":
                             player_cash = randint(500, 800)
                             btn.text = "$" + str(player_cash)
                             continue
@@ -228,13 +245,12 @@ def game_setup(dice_player):
         text = font.render("Game Setup", 1, (font_color))
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
         text = font.render("Hello " + dice_player.name, 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 400))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 150))
         text = font.render("You Have $" + str(dice_player.cash), 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 300))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 100))
 
-
-        btns1 = [Button("Join Game", 300, 600, (btn_color)),
-                 Button("Create A Game", 500, 600, (btn_color))]
+        btns1 = [Button("Join", 200, 300, (btn_color)),
+                 Button("Create", 350, 300, (btn_color))]
         for btn in btns1:
             btn.draw(win)
 
@@ -246,9 +262,9 @@ def game_setup(dice_player):
                 pos = pygame.mouse.get_pos()
                 for btn in btns1:
                     if btn.click(pos):
-                        if btn.text == "Join Game":
+                        if btn.text == "Join":
                             join_game_screen(dice_player)
-                        if btn.text == "Create A Game":
+                        if btn.text == "Create":
                             create_game_screen(dice_player)
                         run = False
         pygame.display.update()
@@ -258,10 +274,13 @@ def join_game_screen(dice_player):
     n = Network()
     g = Get_Games("join")
     n.connect(g)
+    dice_player.p = int(n.getP())
     dict_choice = draw_join_game_screen(n.games, dice_player)
     g = Get_Games("join", dict_choice)
     n.send(g)
     dice_player.ready = True
+    game = n.send(dice_player)
+    dice_player.p = game.active_players - 1
     game = n.send(dice_player)
     create_a_game(n, game, dice_player)
 
@@ -276,12 +295,12 @@ def draw_join_game_screen(game_dict, dice_player):
         win.fill((0, 0, 0))
         font = pygame.font.SysFont(font_type, 24)
         text = font.render("Join a Game", 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 484))
-        games = [Button("1", 25, 100, (btn_color)),
-                 Button("2", 225, 100, (btn_color)),
-                 Button("3", 425, 100, (btn_color)),
-                 Button("4", 625, 100, (btn_color)),
-                 Button("5", 825, 100, (btn_color))]
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
+        games = [Button("1", 10, 100, (btn_color)),
+                 Button("2", 120, 100, (btn_color)),
+                 Button("3", 230, 100, (btn_color)),
+                 Button("4", 340, 100, (btn_color)),
+                 Button("5", 560, 100, (btn_color))]
         button_count = 0
         for game in games:
             if (button_count < game_dict.__len__()):
@@ -315,46 +334,47 @@ def create_game_screen(dice_player):
         win.fill((0, 0, 0))
         font = pygame.font.SysFont(font_type, 24)
         text = font.render("Create Game", 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 484))
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
         text = font.render("Number of Players", 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 450))
-        number_of_players = [Button("1", 25, 100, (btn_color)),
-                             Button("2", 225, 100, (btn_color)),
-                             Button("3", 425, 100, (btn_color)),
-                             Button("4", 625, 100, (btn_color)),
-                             Button("5", 825, 100, (btn_color))]
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 175))
+        number_of_players = [Button("1", 50, 85, (btn_color)),
+                             Button("2", 160, 85, (btn_color)),
+                             Button("3", 270, 85, (btn_color)),
+                             Button("4", 380, 85, (btn_color)),
+                             Button("5", 490, 85, (btn_color))]
         for num in number_of_players:
             num.draw(win)
 
         text = font.render("Rounds", 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 250))
-        rounds = [Button("5", 25, 300, (btn_color)),
-                  Button("10", 225, 300, (btn_color)),
-                  Button("15", 425, 300, (btn_color)),
-                  Button("20", 625, 300, (btn_color)),
-                  Button("All or Nothing", 825, 300, (btn_color))]
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 75))
+        rounds = [Button("5", 50, 185, (btn_color)),
+                  Button("10", 160, 185, (btn_color)),
+                  Button("15", 270, 185, (btn_color)),
+                  Button("20", 380, 185, (btn_color)),
+                  Button("WTA", 490, 185, (btn_color))]
         for round in rounds:
             round.draw(win)
 
         text = font.render("Ante", 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 50))
-        rounds = [Button("2", 25, 500, (btn_color)),
-                  Button("5", 225, 500, (btn_color)),
-                  Button("10", 425, 500, (btn_color)),
-                  Button("20", 625, 500, (btn_color)),
-                  Button("100", 825, 500, (btn_color))]
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) +25))
+        rounds = [Button("2", 50, 285, (btn_color)),
+                  Button("5", 160, 285, (btn_color)),
+                  Button("10", 270, 285, (btn_color)),
+                  Button("20", 380, 285, (btn_color)),
+                  Button("100", 490, 285, (btn_color))]
         for round in rounds:
             round.draw(win)
 
         text = font.render("Choose Away", 1, (font_color))
-        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) + 150))
-        rounds = [Button("1's", 200, 700, (btn_color)),
-                  Button("2's", 400, 700, (btn_color)),
-                  Button("3's", 600, 700, (btn_color)),
-                  Button("4's", 200, 850, (btn_color)),
-                  Button("5's", 400, 850, (btn_color)),
-                  Button("6's", 600, 850, (btn_color))]
+        win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) + 125))
+        rounds = [Button("1's", 10, 385, (btn_color)),
+                  Button("2's", 120, 385, (btn_color)),
+                  Button("3's", 230, 385, (btn_color)),
+                  Button("4's", 340, 385, (btn_color)),
+                  Button("5's", 450, 385, (btn_color)),
+                  Button("6's", 560, 385, (btn_color))]
         for round in rounds:
+            round.width = 75;
             round.draw(win)
 
         game_params = GameParam(2, 5, 10, 2)
@@ -389,18 +409,28 @@ def create_a_game(n, game, dice_player):
     run = True
     clock = pygame.time.Clock()
 
-    dice_player.p = game.active_players
-
     if dice_player.p == 0:
         dice_player.my_turn = True
         game = n.send(dice_player)
 
     while run:
         game = n.send(dice_player)
+        if game == -1:
+            run = False
+            pygame.quit()
         clock.tick(60)
         font = pygame.font.SysFont(font_type, 48)
-        if dice_player.my_turn is True and dice_player.finished is False:
+        if game.connected() is False:
+            draw_waiting(win, game, dice_player)
+        elif dice_player.my_turn is False and dice_player.finished is False:
+            game = n.send(dice_player)
+            draw_wait_your_turn_window(win, game, dice_player)
+            if game.my_turn_yet(dice_player):
+                dice_player.my_turn = True
+        elif dice_player.my_turn is True and dice_player.finished is False:
             if dice_player.rolled is False:
+                dice_player.rolling = True
+                game = n.send(dice_player)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         run = False
@@ -417,13 +447,16 @@ def create_a_game(n, game, dice_player):
                             if dice_player.remaining_rolls == 0:
                                 dice_player.my_turn = False
                                 dice_player.finished = True
+                                dice_player.rolling = False
                                 dice_player.rolled = False
                                 game = n.send(dice_player)
-                    redrawWindow(win, game, dice_player)
+                    draw_roll_window(win, game, dice_player)
             else:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         run = False
+                        dice_player.quit = True
+                        game = n.send(dice_player)
                         pygame.quit()
                     if event.type == pygame.MOUSEBUTTONUP and dice_player.rolled is True:
                         pos = pygame.mouse.get_pos()
@@ -447,17 +480,14 @@ def create_a_game(n, game, dice_player):
                             dice_player.final_total = dice_player.roll_total
                             if dice_player.roll_total > game.top_total:
                                 dice_player.busted = True
+                                dice_player.rolling = False
                                 dice_player.remaining_rolls = 0
                                 dice_player.finished = True
                             game = n.send(dice_player)
                             dice_player.rolled = False
-                    redrawWindow(win, game, dice_player)
-        elif dice_player.my_turn is False and dice_player.finished is False:
-            game = n.send(dice_player)
-            draw_wait_your_turn_window(win, game, dice_player)
-            if game.my_turn_yet(dice_player):
-                dice_player.my_turn = True
+                    draw_roll_window(win, game, dice_player)
         elif dice_player.finished is True:
+
             draw_game_over_window(win, game, dice_player)
 
 
@@ -472,7 +502,6 @@ def reset_buttons():
         choice.color = (btn_color)
         choice.selected = False
     keep_button.color = (btn_color)
-
 
 
 while True:

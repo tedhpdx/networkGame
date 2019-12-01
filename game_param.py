@@ -4,4 +4,5 @@ class GameParam():
         self.rounds = rounds
         self.ante = ante
         self.away_choice = away_choice
+        self.killed = False
         self.pickle_string = "game"

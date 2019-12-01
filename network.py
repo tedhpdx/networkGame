@@ -6,7 +6,7 @@ class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = "localhost"
-        self.port = 5555
+        self.port = 55556
         self.addr = (self.server, self.port)
         self.p = None
         self.games = {}
@@ -30,7 +30,10 @@ class Network:
         try:
             net_pack_obj = pickle.dumps(net_pack)
             self.client.send(net_pack_obj)
-            return pickle.loads(self.client.recv(2048))
+            data = pickle.loads(self.client.recv(2048))
+            if data == "game killed":
+                return -1
+            return data
         except socket.error as e:
             print(e)
 
