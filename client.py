@@ -421,7 +421,6 @@ def create_a_game(n, game, dice_player):
     run = True
     clock = pygame.time.Clock()
 
-
     if dice_player.p == 0 or game.in_progress:
         dice_player.my_turn = True
         game = n.send(dice_player)

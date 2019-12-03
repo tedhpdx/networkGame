@@ -89,7 +89,8 @@ while True:
             client_pack["p"] = p
             conn.sendall(pickle.dumps(client_pack))
             print("Connecting to game")
-            games[idCount].add_active_player()
+            games[client_data.gameId].add_active_player()
+            print("Client gameId:" + str(client_data.gameId))
             start_new_thread(threaded_client, (conn, p, client_data.gameId))
         elif client_data.pickle_string == "create":
             idCount += 1
