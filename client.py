@@ -234,6 +234,8 @@ def player_setup():
 
 
 def game_setup(dice_player):
+    if dice_player.left_game is True:
+        dice_player.reset()
     run = True
     clock = pygame.time.Clock()
 
@@ -328,9 +330,17 @@ def draw_join_game_screen(game_dict, dice_player):
                 for game in games:
                     if game.click(pos):
                         if game.text == "1":
-                            return 1
+                            count = 0
+                            for g in game_dict:
+                                count += 1
+                                if count == 1:
+                                    return g
                         if game.text == "2":
-                            return 2
+                            count = 0
+                            for g in game_dict:
+                                count += 1
+                                if count == 2:
+                                    return g
         pygame.display.flip()
 
 
@@ -429,6 +439,11 @@ def create_a_game(n, game, dice_player):
     while run:
         game = n.send(dice_player)
         if game is None:
+            game_setup(dice_player)
+        if game == -2:
+            run = False
+            print ("server quit")
+            dice_player.left_game = True
             game_setup(dice_player)
         if game == -1:
             run = False

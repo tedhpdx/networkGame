@@ -37,6 +37,8 @@ class Network:
             net_pack_obj = pickle.dumps(net_pack)
             self.client.send(net_pack_obj)
             pickled_object = self.client.recv(2048)
+            if not pickled_object:
+                return -2
             data = pickle.loads(pickled_object)
             if data == "game killed":
                 return -1
