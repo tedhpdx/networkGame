@@ -6,24 +6,25 @@ from game import Game
 import pickle
 
 server = "localhost"
-port = 55556
+port = 55557
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((server, port))
 except socket.error as e:
-    str(e)
+    print (str(e))
 
 s.listen()
 print("Waiting for a connection, Server Started")
 
-connected = set()
+#connected = set()
 games = {}
-idCount = 0
+gameId = 0
+#idCount = 0
 
 
 def threaded_client(conn, p, gameId):
-    global idCount
+    #global idCount
 
     while True:
         try:
@@ -63,10 +64,9 @@ def threaded_client(conn, p, gameId):
         if games[gameId]:
             del games[gameId]
             print("Closing game")
-            idCount -= 1
+            #idCount -= 1
     except :
         print("delete game error")
-    print("idCount: " + str(idCount))
     conn.close()
 
 
@@ -93,15 +93,14 @@ while True:
             print("Client gameId:" + str(client_data.gameId))
             start_new_thread(threaded_client, (conn, p, client_data.gameId))
         elif client_data.pickle_string == "create":
-            idCount += 1
-            gameId = idCount
+            gameId += 1
+            #gameId = idCount
             games[gameId] = Game(gameId)
-            games[idCount].add_active_player()
+            games[gameId].add_active_player()
             client_pack["games"] = games
             client_pack["p"] = p
             conn.sendall(pickle.dumps(client_pack))
             print("Creating a new Game")
-            p = 0
             start_new_thread(threaded_client, (conn, p, gameId))
     except socket.error as e:
         print("error")

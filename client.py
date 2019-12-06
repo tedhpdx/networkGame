@@ -165,7 +165,6 @@ def draw_scoreboard(win, game, dice_player):
             if btn.click(pos):
                 dice_player.left_game = True
 
-
 def welcome_screen():
     run = True
     clock = pygame.time.Clock()
@@ -272,6 +271,8 @@ def game_setup(dice_player):
 
 
 def join_game_screen(dice_player):
+    if dice_player.left_game is True:
+        dice_player.reset()
     n = Network()
     g = Get_Games("join")
     n.connect(g)
@@ -427,12 +428,15 @@ def create_a_game(n, game, dice_player):
 
     while run:
         game = n.send(dice_player)
+        if game is None:
+            game_setup(dice_player)
         if game == -1:
             run = False
             pygame.quit()
         if dice_player.left_game is True:
             run = False
-            pygame.quit()
+            game_setup(dice_player)
+            #pygame.quit()
         clock.tick(60)
         font = pygame.font.SysFont(font_type, 48)
         if game.connected() is False:
@@ -505,9 +509,9 @@ def create_a_game(n, game, dice_player):
                                 dice_player.finished = True
                             game = n.send(dice_player)
                             dice_player.rolled = False
-                    draw_roll_window(win, game, dice_player)
+                    if (draw_roll_window(win, game, dice_player) == False):
+                        run = False
         elif dice_player.finished is True:
-
             draw_game_over_window(win, game, dice_player)
 
 

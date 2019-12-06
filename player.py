@@ -37,12 +37,20 @@ class Player():
             self.roll_total += self.roll[point_value]
 
     def reset(self):
-        self.pickle_string = ""
+        self.pickle_string = "player"
+        self.p = 0
+        self.ready = False
         self.rolled = False
+        self.rolling = False
         self.roll = []
         self.roll_total = 0
+        self.final_total = 0
         self.remaining_rolls = 6
         self.my_turn = False
         self.finished = False
+        self.roll_reduction = 0
+        self.busted = False
+        self.killed_game = False
+        self.left_game = False
         for r in self.result:
             r = False
