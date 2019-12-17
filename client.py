@@ -142,8 +142,8 @@ def draw_wait_your_turn_window(win, game, dice_player):
 
 
 def draw_scoreboard(win, game, dice_player):
+    opponents = {}
     font = pygame.font.SysFont(font_type, 16)
-    opponents = game.get_opponents(dice_player)
     x_offset = 280
     y_offset = 220
     for opponent in opponents:
@@ -269,7 +269,7 @@ def game_setup(dice_player):
                         if btn.text == "Create":
                             create_game_screen(dice_player)
                         run = False
-        pygame.display.update()
+        pygame.display.flip()
 
 
 def join_game_screen(dice_player):
@@ -281,6 +281,8 @@ def join_game_screen(dice_player):
     dice_player.p = int(n.getP())
     dice_player.global_id = n.get_global_id()
     dict_choice = draw_join_game_screen(n.games, dice_player)
+    if dict_choice == -1:
+        return game_setup(dice_player)
     g = Get_Games("join", dict_choice)
     dice_player.p = n.games[dict_choice].active_players
     n.send(g)
@@ -307,6 +309,16 @@ def draw_join_game_screen(game_dict, dice_player):
         win.fill((0, 0, 0))
         font = pygame.font.SysFont(font_type, 24)
         text = font.render("Join a Game", 1, (font_color))
+        btn = Button("Exit", 100, 10, (btn_color))
+        btn.draw(win)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                if btn.click(pos):
+                    return -1
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
         games = [Button("1", 10, 100, (btn_color)),
                  Button("2", 120, 100, (btn_color)),
