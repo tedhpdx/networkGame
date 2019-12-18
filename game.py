@@ -89,13 +89,16 @@ class Game:
                 break
         self.reorder_players()
 
-
+    def get_winner(self):
+        for player in self.dice_players:
+            if self.dice_players[player].result["winner"] == True:
+                return self.dice_players[player]
+    '''
     def get_winner(self):
         for d in self.dice_players:
             if d and self.top_total == self.dice_players[d].roll_total:
                 self.dice_players[d].result["winner"] = True
                 return self.dice_players[d]
-        '''
         
         if self.dice_player_0.roll_total < self.dice_player_1.roll_total:
             self.dice_player_0.result["winner"] = True
@@ -110,7 +113,7 @@ class Game:
         '''
 
     def connected(self):
-        if self.active_players < 4:
+        if self.active_players < 2:
             return False
         '''
         for d in self.dice_players:

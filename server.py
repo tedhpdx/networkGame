@@ -31,6 +31,8 @@ def threaded_client(conn, p, gameId):
 
             if gameId in games:
                 game = games[gameId]
+                if client_data.pickle_string == "reset":
+                    game.reset_game()
                 if client_data.pickle_string == "game":
                     game.update_game(client_data)
                     if client_data.in_progress:

@@ -100,7 +100,7 @@ def render_total(dice_player):
 def draw_game_over_window(win, game, dice_player):
     win.fill((0, 0, 0))
     draw_scoreboard(win, game, dice_player)
-    font = pygame.font.SysFont(font_type, 48)
+    font = pygame.font.SysFont(font_type, 24)
     text = font.render("Game over fool!", 1, (font_color))
     win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2))
     text = font.render("Your Score: " + str(dice_player.roll_total), 1, (font_color))
@@ -109,22 +109,18 @@ def draw_game_over_window(win, game, dice_player):
         winner = game.get_winner()
         if winner and winner.result["push"] is True:
             text = font.render("Push!", 1, (font_color))
-            win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
+            win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 + 100))
         elif winner and winner.p == dice_player.p:
             text = font.render("You Win!", 1, (font_color))
-            win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 300))
+            win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 + 100))
         else:
             text = font.render("You Lose!", 1, (font_color))
-            win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 400))
-        # dice_player.reset()
-        pygame.time.wait(1000)
+            win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 + 100))
         # win.fill((0, 0, 0))
-        pygame.display.flip()
-        # create_a_game(dice_player)
+        #pygame.display.flip()
     else:
         text = font.render("Waiting on them fools!", 1, (font_color))
         win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 200))
-
     pygame.event.get()
     pygame.display.flip()
 
@@ -163,9 +159,6 @@ def draw_scoreboard(win, game, dice_player):
             pos = pygame.mouse.get_pos()
             if exit_btn.click(pos):
                 dice_player.left_game = True
-
-
-
 
 
 def welcome_screen():
@@ -318,12 +311,12 @@ def draw_join_game_screen(game_dict, dice_player):
         exit_btn = Button("Exit", 100, 10, (btn_color))
         exit_btn.draw(win)
         win.blit(text, (width / 2 - text.get_width() / 2, (height / 2 - text.get_height() / 2) - 200))
-        games =[ Button("exit", 100, 10, (btn_color)),
-                 Button("1", 10, 100, (btn_color)),
-                 Button("2", 120, 100, (btn_color)),
-                 Button("3", 230, 100, (btn_color)),
-                 Button("4", 340, 100, (btn_color)),
-                 Button("5", 560, 100, (btn_color))]
+        games =[Button("exit", 100, 10, (btn_color)),
+                Button("1", 10, 100, (btn_color)),
+                Button("2", 120, 100, (btn_color)),
+                Button("3", 230, 100, (btn_color)),
+                Button("4", 340, 100, (btn_color)),
+                Button("5", 560, 100, (btn_color))]
         button_count = 0
         for game in games:
             if (button_count < game_dict.__len__() + 1):
@@ -503,7 +496,7 @@ def create_a_game(n, game, dice_player):
                                 dice_player.rolled = False
                                 game = n.send(dice_player)
                     draw_roll_window(win, game, dice_player)
-            else:
+            else: #player.rolled is true
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         run = False
@@ -539,8 +532,17 @@ def create_a_game(n, game, dice_player):
                             dice_player.rolled = False
                     if (draw_roll_window(win, game, dice_player) == False):
                         run = False
-        elif dice_player.finished is True:
+        elif dice_player.finished is True and game.finished() is False:
             draw_game_over_window(win, game, dice_player)
+        elif game.finished() is True:
+            #set winner as roller
+            game = n.send(dice_player)
+            temp = game.get_winner()
+            if dice_player == temp:
+                dice_player.my_turn = True
+            dice_player.reset(1)
+            game = n.send(dice_player)
+            continue
 
 
 def get_ready(dice_player):

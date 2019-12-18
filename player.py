@@ -36,9 +36,8 @@ class Player():
         if int(away_choice) != self.roll[point_value]:
             self.roll_total += self.roll[point_value]
 
-    def reset(self):
+    def reset(self, n=0):
         self.pickle_string = "player"
-        self.p = 0
         self.ready = False
         self.rolled = False
         self.rolling = False
@@ -46,7 +45,8 @@ class Player():
         self.roll_total = 0
         self.final_total = 0
         self.remaining_rolls = 6
-        self.my_turn = False
+        if (n == 0):
+            self.my_turn = False
         self.finished = False
         self.roll_reduction = 0
         self.busted = False
