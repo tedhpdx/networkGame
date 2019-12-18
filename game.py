@@ -15,6 +15,11 @@ class Game:
         self.killed = False
         self.in_progress = False
 
+    def reorder_players(self):
+        p = 0
+        for player in self.dice_players:
+            self.dice_players[player].p = p
+            p += 1
 
     def update_game(self, game_params):
         self.number_of_players = game_params.num_players
@@ -82,6 +87,7 @@ class Game:
                 if (self.active_players <= 0):
                     return -1
                 break
+        self.reorder_players()
 
 
     def get_winner(self):
@@ -104,7 +110,7 @@ class Game:
         '''
 
     def connected(self):
-        if self.active_players < 3:
+        if self.active_players < 4:
             return False
         '''
         for d in self.dice_players:

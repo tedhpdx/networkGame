@@ -20,11 +20,9 @@ print("Waiting for a connection, Server Started")
 #connected = set()
 games = {}
 gameId = 0
-#idCount = 0
 
 
 def threaded_client(conn, p, gameId):
-    #global idCount
 
     while True:
         try:
@@ -85,6 +83,9 @@ while True:
             conn.sendall(pickle.dumps(client_pack))
             data = conn.recv(4096)
             client_data = pickle.loads(data)
+            if client_data.pickle_string == "unjoin":
+                conn.close()
+                continue
         if client_data.pickle_string == "join" and client_data.gameId is not None:
             client_pack["p"] = p
             conn.sendall(pickle.dumps(client_pack))
