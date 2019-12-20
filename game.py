@@ -90,9 +90,31 @@ class Game:
         self.reorder_players()
 
     def get_winner(self):
+        if self.set_results() == "push":
+            return "push"
         for player in self.dice_players:
-            if self.dice_players[player].result["winner"] == True:
+            if self.dice_players[player].result["winner"] is True:
                 return self.dice_players[player]
+
+    def set_results(self):
+        if self.set_push():
+            return "push"
+        for player in self.dice_players:
+            if self.dice_players[player].roll_total == self.top_total:
+                self.dice_players[player].result["winner"] = True
+            else:
+                self.dice_players[player].result["loser"] = True
+
+    def set_push(self):
+        top_total_count = 0
+        for player in self.dice_players:
+            if self.dice_players[player].roll_total == self.top_total:
+                top_total_count += 1
+        if top_total_count >= 2:
+            for player in self.dice_players:
+                self.dice_players[player].result["push"] = True
+            return True
+
     '''
     def get_winner(self):
         for d in self.dice_players:

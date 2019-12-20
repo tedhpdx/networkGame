@@ -6,7 +6,7 @@ from game import Game
 import pickle
 
 server = "localhost"
-port = 55552
+port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -35,8 +35,9 @@ def threaded_client(conn, p, gameId):
                     game.reset_game()
                 if client_data.pickle_string == "game":
                     game.update_game(client_data)
-                    if client_data.in_progress:
-                        game.in_progress = True
+                    print(game.away_choice)
+                if client_data.pickle_string == "in progress":
+                    game.in_progress = True
                 if client_data.pickle_string == "player":
                     dice_player = client_data
                     game.update_object(dice_player)

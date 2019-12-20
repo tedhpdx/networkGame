@@ -107,12 +107,13 @@ def draw_game_over_window(win, game, dice_player):
     win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 - 100))
     if game.finished():
         winner = game.get_winner()
-        if winner and winner.result["push"] is True:
+        if winner == "push":
             text = font.render("Push!", 1, (font_color))
             win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 + 100))
-        elif winner and winner.p == dice_player.p:
+        elif winner.p == dice_player.p:
             text = font.render("You Win!", 1, (font_color))
             win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 + 100))
+            #choose new away_choice
         else:
             text = font.render("You Lose!", 1, (font_color))
             win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2 + 100))
@@ -468,8 +469,7 @@ def create_a_game(n, game, dice_player):
             if game.my_turn_yet(dice_player):
                 dice_player.my_turn = True
         elif dice_player.my_turn is True and dice_player.finished is False:
-            in_progress = GameParam(0,0,0,0)
-            in_progress.in_progress = True
+            in_progress = Get_Games("in progress")
             n.send(in_progress)
             if dice_player.rolled is False:
                 dice_player.rolling = True
@@ -535,6 +535,8 @@ def create_a_game(n, game, dice_player):
         elif dice_player.finished is True and game.finished() is False:
             draw_game_over_window(win, game, dice_player)
         elif game.finished() is True:
+            draw_game_over_window(win, game, dice_player)
+            '''
             #set winner as roller
             game = n.send(dice_player)
             temp = game.get_winner()
@@ -543,6 +545,7 @@ def create_a_game(n, game, dice_player):
             dice_player.reset(1)
             game = n.send(dice_player)
             continue
+            '''
 
 
 def get_ready(dice_player):
