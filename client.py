@@ -149,7 +149,7 @@ def draw_scoreboard(win, game, dice_player):
         text = font.render(str(opponents[opponent].roll_total), 1, (0, 255, 255))
         win.blit(text, (width / 2 - text.get_width() / 2 - x_offset + 40, height / 2 - text.get_height() / 2 - y_offset))
         y_offset -= 20
-        if opponents[opponent].roll and opponents[opponent].rolling:
+        if opponents[opponent].roll and opponents[opponent].rolling and dice_player.finished is False:
             render_rolls(opponents[opponent])
     exit_btn = Button("Exit", 100, 10, (btn_color))
     exit_btn.draw(win)
